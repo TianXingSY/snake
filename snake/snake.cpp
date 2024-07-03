@@ -124,6 +124,11 @@ void input() {
 }
 
 int main() {
+    // 获取控制台输出句柄
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    // 设置文字颜色为红色，背景颜色为蓝色
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY | BACKGROUND_GREEN|BACKGROUND_BLUE);
     srand(time(NULL));
     setup();
 
