@@ -3,15 +3,20 @@
 #include <stdlib.h>
 #include <windows.h>
 #include <time.h>
+#include <iostream>
+#include <conio.h>
 
 #define WIDTH 40
 #define HEIGHT 20
+char frameBuffer[HEIGHT][WIDTH + 2];
 
 int snake_x[100];
 int snake_y[100];
 int food_x, food_y;
 int direction = 'r'; // r, l, u, d
 int score = 0;
+int n = 3;
+
 
 void place_food();
 
@@ -38,43 +43,59 @@ void setup() {
 }
 
 void draw() {
-    system("cls");
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD bufferSize = { WIDTH + 2, HEIGHT };
+    SMALL_RECT windowSize = { 0, 0, WIDTH + 1, HEIGHT - 1 };
+
+    SetConsoleScreenBufferSize(hConsole, bufferSize);
+    SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
+
+    // 清除屏幕并设置光标位置
+    COORD coord = { 0, 0 };
+    DWORD written;
+    FillConsoleOutputCharacterA(hConsole, ' ', WIDTH * HEIGHT, coord, &written);
+    SetConsoleCursorPosition(hConsole, coord);
+
+    // 从缓冲区打印到屏幕
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j <= WIDTH + 1; j++) {
+            std::cout << frameBuffer[i][j];
+        }
+        std::cout << std::endl;
+    }
+
+    // 更新缓冲区
     for (int i = 0; i <= WIDTH + 1; i++)
-        printf("#");
-    printf("\n");
+        frameBuffer[0][i] = '#';
 
     for (int i = 0; i < HEIGHT; i++) {
+        frameBuffer[i][0] = '#';
         for (int j = 0; j < WIDTH; j++) {
-            if (j == 0)
-                printf("#");
             if (i == snake_y[0] && j == snake_x[0])
-                printf("O");
+                frameBuffer[i][j + 1] = 'O';
             else if (i == food_y && j == food_x)
-                printf("*");
+                frameBuffer[i][j + 1] = '*';
             else {
-                int print = 0;
-                for (int k = 1; k < score; k++) {
+                bool printed = false;
+                for (int k = 1; k < n; k++) {
                     if (snake_y[k] == i && snake_x[k] == j) {
-                        printf("o");
-                        print = 1;
+                        frameBuffer[i][j + 1] = 'o';
+                        printed = true;
                     }
                 }
-                if (!print)
-                    printf(" ");
+                if (!printed)
+                    frameBuffer[i][j + 1] = ' ';
             }
-
-            if (j == WIDTH - 1)
-                printf("#");
+            frameBuffer[i][WIDTH + 1] = '#';
         }
-        printf("\n");
     }
 
     for (int i = 0; i <= WIDTH + 1; i++)
-        printf("#");
-    printf("\n");
+        frameBuffer[HEIGHT - 1][i] = '#';
 
-    printf("Score: %d\n", score);
+    std::cout << "得分: " << score << std::endl;
 }
+
 
 void place_food() {
     food_x = rand() % WIDTH;
